@@ -49,9 +49,9 @@ venv.bak/
 ########################################
 # Data & ML artifacts (DO NOT COMMIT)
 ########################################
-data/
-datasets/
-checkpoints/
+# data/
+# datasets/
+# checkpoints/
 models/
 embeddings/
 wandb/
