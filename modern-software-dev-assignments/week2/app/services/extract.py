@@ -66,6 +66,79 @@ def extract_action_items(text: str) -> List[str]:
     return unique
 
 
+def extract_action_items_llm(text: str) -> list[str]:
+    """
+    Extract action items from free-form notes using an LLM via Ollama.
+
+    Returns:
+        List of action item strings.
+    """
+    import json
+    import requests
+
+    text = (text or "").strip()
+    if not text:
+        return []
+
+    OLLAMA_URL = "http://localhost:11434/api/generate"
+    MODEL = "llama3.1:8b"  # model nhỏ, chạy nhẹ – đổi nếu bạn muốn llama3.2:1b
+
+    system_prompt = (
+        "You are an assistant that extracts action items from notes.\n"
+        "Return ONLY valid JSON.\n"
+        "The output must be a JSON array of strings.\n"
+        "Each string is a concise action item starting with a verb.\n"
+        "If there are no action items, return an empty JSON array: [].\n"
+        "Do not include explanations or markdown."
+    )
+
+    prompt = f"""SYSTEM:
+            {system_prompt}
+            
+            USER:
+            {text}
+            
+            OUTPUT:
+        """
+
+    payload = {
+        "model": MODEL,
+        "prompt": prompt,
+        "stream": False,
+        "options": {
+            "temperature": 0.2
+        }
+    }
+
+    try:
+        response = requests.post(OLLAMA_URL, json=payload, timeout=60)
+        response.raise_for_status()
+        result = response.json()
+
+        raw = (result.get("response") or "").strip()
+
+        # Expect raw to be JSON, but be defensive
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            # Try to recover JSON array inside the text
+            start = raw.find("[")
+            end = raw.rfind("]")
+            if start == -1 or end == -1 or end <= start:
+                return []
+            data = json.loads(raw[start:end + 1])
+
+        if not isinstance(data, list):
+            return []
+
+        # Clean result
+        return [item.strip() for item in data if isinstance(item, str) and item.strip()]
+
+    except Exception as e:
+        # In production you might log this
+        return []
+
+
 def _looks_imperative(sentence: str) -> bool:
     words = re.findall(r"[A-Za-z']+", sentence)
     if not words:

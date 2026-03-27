@@ -1,0 +1,8 @@
+ollama list
+Pull:
+ollama pull llama3:8b
+
+Xóa:
+ollama rm <model-name>
+ollama rm llama3:8b
+

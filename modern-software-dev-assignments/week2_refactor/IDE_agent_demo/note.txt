@@ -1,0 +1,5 @@
+Khi nhập prompt thì code sẽ gọi hàm tương ứng với từng yêu cầu của Prompt
+# Mục đích là cho tool gọi đúng hàm tương ứng với text input
+# You: List files in the current directory
+# You: Read the file README.md
+# You: Add a comment at the top of simple_mcp.py that says "# MCP Server"

@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException
 
 from .. import db
-from ..services.extract import extract_action_items
+from ..services.extract import extract_action_items, extract_action_items_llm
 
 
 router = APIRouter(prefix="/action-items", tags=["action-items"])
@@ -21,7 +21,8 @@ def extract(payload: Dict[str, Any]) -> Dict[str, Any]:
     if payload.get("save_note"):
         note_id = db.insert_note(text)
 
-    items = extract_action_items(text)
+    # items = extract_action_items(text)
+    items = extract_action_items_llm(text)
     ids = db.insert_action_items(items, note_id=note_id)
     return {"note_id": note_id, "items": [{"id": i, "text": t} for i, t in zip(ids, items)]}
 
